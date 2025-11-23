@@ -73,7 +73,7 @@ export const calculateStats = (logs: LogEntry[]): LogStats => {
 
 export const clusterGroups = (logs: LogEntry[]): LogGroup[] => {
   const groups: LogGroup[] = [];
-  let currentGroup: Partial<LogGroup> | null = null;
+  let currentGroup: LogGroup | null = null;
 
   // Regex to capture group name from specific log message patterns found in the sample
   const GROUP_START_REGEX = /Iniciando processamento do grupo: (.*)$/;
@@ -83,22 +83,27 @@ export const clusterGroups = (logs: LogEntry[]): LogGroup[] => {
     const startMatch = log.message.match(GROUP_START_REGEX);
 
     if (startMatch) {
-      // If a group was already open, close it (assuming linear processing)
+      // If a group was already open, close it.
       if (currentGroup) {
-        currentGroup.endTime = log.dateObj; // Use start of next as end of prev roughly
-        currentGroup.durationMs = (currentGroup.endTime?.getTime() || 0) - (currentGroup.startTime?.getTime() || 0);
-        groups.push(currentGroup as LogGroup);
+        currentGroup.endTime = currentGroup.entries[currentGroup.entries.length - 1].dateObj;
+        currentGroup.durationMs = currentGroup.endTime.getTime() - currentGroup.startTime.getTime();
+        groups.push(currentGroup);
       }
 
+      // Start a new group
       currentGroup = {
         name: startMatch[1],
         startTime: log.dateObj,
         entries: [log],
-        status: 'complete', // Default to complete, set to error if found
-        fileCount: 0
+        status: 'complete',
+        fileCount: 0,
+        // Placeholders, will be updated when the group is closed
+        endTime: log.dateObj, 
+        durationMs: 0,
       };
     } else if (currentGroup) {
-      currentGroup.entries?.push(log);
+      // Add log to the current group
+      currentGroup.entries.push(log);
       
       if (log.level === LogLevel.ERROR) {
         currentGroup.status = 'error';
@@ -111,9 +116,9 @@ export const clusterGroups = (logs: LogEntry[]): LogGroup[] => {
 
   // Push the last group
   if (currentGroup) {
-    currentGroup.endTime = currentGroup.entries![currentGroup.entries!.length - 1].dateObj;
-    currentGroup.durationMs = (currentGroup.endTime.getTime()) - (currentGroup.startTime!.getTime());
-    groups.push(currentGroup as LogGroup);
+    currentGroup.endTime = currentGroup.entries[currentGroup.entries.length - 1].dateObj;
+    currentGroup.durationMs = currentGroup.endTime.getTime() - currentGroup.startTime.getTime();
+    groups.push(currentGroup);
   }
 
   return groups;
