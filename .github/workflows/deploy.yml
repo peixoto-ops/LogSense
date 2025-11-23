@@ -31,9 +31,14 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      # Alterado de 'npm ci' para 'npm install' para evitar erros se o package-lock.json não estiver sincronizado
+      - name: Check for lock file
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found."
+            exit 1
+          fi
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build project
         run: npm run build
