@@ -5,21 +5,9 @@ import LogChart from './components/LogChart';
 import LogViewer from './components/LogViewer';
 import InsightsPanel from './components/InsightsPanel';
 import ClusterView from './components/ClusterView';
-// import { Upload, BarChart2, Activity, AlertTriangle, FileText } from 'lucide-react';
-
-// // Placeholder data from prompt for initial state
-// const INITIAL_LOG_DATA = `[2025-11-13 04:51:08] [ERROR] Erro na linha 34 (código: 1): 
-// [2025-11-13 04:51:08] [INFO] Limpando arquivos temporários...
-// [2025-11-13 04:51:08] [INFO] Limpeza concluída
-// [2025-11-13 04:51:08] [INFO] Iniciando processamento do grupo: identidade_comprovante_residência_josé_campos
-// [2025-11-13 04:51:08] [INFO] Processando arquivo no grupo: ./processamento/CCF21082025_00001.pdf
-// [2025-11-13 04:51:08] [DEBUG] Tamanho do arquivo: 680K
-// [2025-11-13 04:51:11] [SUCCESS] Imagem convertida para PDF com sucesso
-// [2025-11-13 04:51:22] [SUCCESS] Grupo processado e movido para saída
-// `;
+import { Upload, BarChart2, Activity, AlertTriangle, FileText } from 'lucide-react';
 
 const App: React.FC = () => {
-  // const [, setRawLog] = useState<string>('');
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [stats, setStats] = useState<LogStats | null>(null);
   const [groups, setGroups] = useState<LogGroup[]>([]);
@@ -43,7 +31,6 @@ const App: React.FC = () => {
     setStats(calculatedStats);
     setGroups(clustered);
     setInsights(generatedInsights);
-    // setRawLog(content);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
