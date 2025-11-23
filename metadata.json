@@ -1,0 +1,5 @@
+{
+  "name": "LogSense Analyzer",
+  "description": "A sophisticated log analysis dashboard designed to process protocol execution logs, featuring statistical breakdowns, intelligent clustering of processing groups, and automated insight generation.",
+  "requestFramePermissions": []
+}
