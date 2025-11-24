@@ -8,7 +8,6 @@ import ClusterView from './components/ClusterView';
 import { Upload, BarChart2, Activity, AlertTriangle, FileText } from 'lucide-react';
 
 const App: React.FC = () => {
-  console.log("App component rendered");
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [stats, setStats] = useState<LogStats | null>(null);
   const [groups, setGroups] = useState<LogGroup[]>([]);

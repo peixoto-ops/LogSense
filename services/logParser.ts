@@ -73,21 +73,23 @@ export const calculateStats = (logs: LogEntry[]): LogStats => {
 
 export const clusterGroups = (logs: LogEntry[]): LogGroup[] => {
   const groups: LogGroup[] = [];
-  let currentGroup: LogGroup | null = null;
+  let currentGroup: Omit<LogGroup, 'endTime' | 'durationMs'> | null = null;
 
-  // Regex to capture group name from specific log message patterns found in the sample
   const GROUP_START_REGEX = /Iniciando processamento do grupo: (.*)$/;
   const FILE_PROCESSED_REGEX = /Processamento concluído para:/;
 
-  logs.forEach((log) => {
+  for (const log of logs) {
     const startMatch = log.message.match(GROUP_START_REGEX);
 
-    if (startMatch) {
-      // If a group was already open, close it.
+    if (startMatch && startMatch[1]) {
+      // Finalize the previous group if it exists
       if (currentGroup) {
-        currentGroup.endTime = currentGroup.entries[currentGroup.entries.length - 1].dateObj;
-        currentGroup.durationMs = currentGroup.endTime.getTime() - currentGroup.startTime.getTime();
-        groups.push(currentGroup);
+        const lastEntry = currentGroup.entries[currentGroup.entries.length - 1];
+        groups.push({
+          ...currentGroup,
+          endTime: lastEntry.dateObj,
+          durationMs: lastEntry.dateObj.getTime() - currentGroup.startTime.getTime(),
+        });
       }
 
       // Start a new group
@@ -97,32 +99,32 @@ export const clusterGroups = (logs: LogEntry[]): LogGroup[] => {
         entries: [log],
         status: 'complete',
         fileCount: 0,
-        // Placeholders, will be updated when the group is closed
-        endTime: log.dateObj, 
-        durationMs: 0,
       };
     } else if (currentGroup) {
       // Add log to the current group
       currentGroup.entries.push(log);
-      
       if (log.level === LogLevel.ERROR) {
         currentGroup.status = 'error';
       }
       if (FILE_PROCESSED_REGEX.test(log.message)) {
-        currentGroup.fileCount = (currentGroup.fileCount || 0) + 1;
+        currentGroup.fileCount++;
       }
     }
-  });
+  }
 
-  // Push the last group
+  // Finalize the very last group after the loop finishes
   if (currentGroup) {
-    currentGroup.endTime = currentGroup.entries[currentGroup.entries.length - 1].dateObj;
-    currentGroup.durationMs = currentGroup.endTime.getTime() - currentGroup.startTime.getTime();
-    groups.push(currentGroup);
+    const lastEntry = currentGroup.entries[currentGroup.entries.length - 1];
+    groups.push({
+      ...currentGroup,
+      endTime: lastEntry.dateObj,
+      durationMs: lastEntry.dateObj.getTime() - currentGroup.startTime.getTime(),
+    });
   }
 
   return groups;
 };
+
 
 export const generateInsights = (stats: LogStats, groups: LogGroup[], logs: LogEntry[]): Insight[] => {
   const insights: Insight[] = [];
